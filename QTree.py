@@ -186,14 +186,6 @@ class QTree():
             self.dict[token.lower()] = term_node.get_post_list()
             return term_node
 
-    def get_post_list(self, token):
-        self.dict[token] = []
-
-        if token in self.dict:
-            return self.dict[token]
-        else:
-            return []
-
     def execute(self):
         result = []
         self.current_value = 0

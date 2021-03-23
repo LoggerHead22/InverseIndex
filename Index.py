@@ -1,11 +1,9 @@
 import gzip
-import codecs
 import os
+import sys
 import re
-import VarByte
-import time
 import pickle
-import numpy as np
+import VarByte
 from collections import Counter
 from functools import reduce
 from sklearn.feature_extraction.text import CountVectorizer
@@ -30,7 +28,6 @@ def parse_file(path):
             else:
                 line = f.readline()
                 continue
-
 
             text = b''
             while flag and line:
@@ -71,20 +68,22 @@ def diff(post_list):
 
 def inverse_diff(post_list):
     """ Переход от id документов к сдвигам"""
-    arr = [post_list[0]]
+    arr = [next(post_list)]
     reduce(lambda x, y: arr.append(x + y) or x + y, post_list)
     return arr
 
-def make_encoded_pl(index, term, vb):
+def make_encoded_pl(post_list, vb):
     """Извлекает из индекса закодированный posting list для term"""
 
-    return vb.encode(diff([i for i, url in enumerate(index) if term in index[url]]))
+    return vb.encode(diff(post_list))
 
 def build_inverse_index(path):
-
+    """Строим обратный индекс. path - путь к папке с *.gz файлами"""
     files = [os.path.join(path, fpath) for fpath in os.listdir(path)]
     results = [process_file(file) for file in files]
 
+    if not os.path.exists('index'):
+        os.makedirs('index')
 
     index = {}
     for result in results:
@@ -92,7 +91,7 @@ def build_inverse_index(path):
 
     id2url = {i: url for i, url in enumerate(index)} #отображение id -> url
 
-    with open('id2url.pkl', 'wb') as fp:
+    with open('index/id2url.pkl', 'wb') as fp:
         pickle.dump(id2url, fp)
 
     counter = Counter()
@@ -104,55 +103,44 @@ def build_inverse_index(path):
 
     term2id = {key: i for i, key in enumerate(terms)}
 
-    with open('term2id.pkl', 'wb') as fp: #отображение term -> id term'a
+    with open('index/term2id.pkl', 'wb') as fp: #отображение term -> id term'a
         pickle.dump(term2id, fp)
 
     vb = VarByte.VarByte()
 
-    time_ = time.clock()
+
+    data_text = [" ".join(tokens) for tokens in index.values()]
+
+    vectorizer = CountVectorizer(vocabulary = terms, token_pattern = r'\w+')
+
+    data_vec = vectorizer.fit_transform(data_text)
+
     #хранит отображение id term'a -> posting list
-    inv_index = {term2id[term] : make_encoded_pl(index, term, vb) for term in terms}
+    inv_index = {i : make_encoded_pl(pl, vb)
+                 for i, pl in enumerate(data_vec.T.tolil().rows)}
 
-    time_ = time.clock() - time_
-
-    print(time_)
 
     num_of_bytes = []
-    with open('inverse_index', 'wb') as f:
+    with open('index/inverse_index', 'wb') as f:
         for term_id in inv_index:
             num_bytes_written = f.write(inv_index[term_id])
             num_of_bytes.append(num_bytes_written)
 
-    with open('n_bytes.pkl', 'wb') as fp:
+    with open('index/n_bytes.pkl', 'wb') as fp:
         pickle.dump(num_of_bytes, fp)
 
-    return inv_index
+    return True
 
 
 
 #%%
 if __name__ == '__main__':
-    path = 'dataset/dataset'
-    index = build_inverse_index(path)
-    print(index[15324])
-#%%
-    vb = VarByte.VarByte()
+    #path = 'dataset/dataset'
+    if len(sys.argv) > 2:
+        print('Wrong Input Argaments. Need path to *.gz files')
 
-    #[111, 565, 797]
-    #s1 = set(inverse_diff(vb.decode(index[66])))
-    #s2 = set(inverse_diff(vb.decode(index[4638])))
-    #s3 = set(inverse_diff(vb.decode(index[12968])))
-
-    s1 = set(inverse_diff(vb.decode(index[111])))
-    s2 = set(inverse_diff(vb.decode(index[565])))
-    s3 = set(inverse_diff(vb.decode(index[797])))
-
-
-    print(s1 & s2)
-    print(s2 & s3)
-    print(s1 & s3)
-
-    print(s1 & s2 & s3, len(s1 & s2 & s3))
-
-
-    #print(vb.decode(index[0]))
+    else:
+        print('Building Index...')
+        path = sys.argv[1]
+        if(build_inverse_index(path)):
+            print('Inverse Index Successfully built')

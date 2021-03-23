@@ -1,5 +1,4 @@
 import re
-import QTree
 
 class QueryParser:
     operators = {'&', '|'}
