@@ -33,41 +33,20 @@ class VarByte:
     def decode(self, bytes_arr):
         """
         Декодируем последвательность байт
-         Функций - генератор целых чисел
+        Функция - генератор целых чисел
         """
 
-        #result = []
         n_bytes = 0
         for byte in bytes_arr:
-            #i = int.from_bytes(byte, byteorder='big')
             i = int(byte)
 
             n_bytes  = n_bytes << 7
 
             if i & self.flag_byte == 128:
                 n_bytes |= i & 127
-                #result.append(n_bytes)
                 yield n_bytes
                 n_bytes = 0
             else:
                 n_bytes |= i
 
-        #return result
-
-
-
-
-
-if __name__ == '__main__':
-
-    import numpy as np
-    vb = VarByte()
-    array = list(map(int, np.random.permutation(10_000_000)))
-
-    result = vb.encode(array)
-    #print(bytearray(result))
-
-    #print(vb.decode(result))
-
-    print(array == vb.decode(result))
 

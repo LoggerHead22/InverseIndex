@@ -11,6 +11,9 @@ class QueryParser:
 
     @classmethod
     def del_brackets(cls, token_query):
+        """
+        Удаляем обвязку из скобок (при необходимости).
+        """
         if len(token_query) < 3:
             return token_query
 
@@ -33,6 +36,10 @@ class QueryParser:
 
     @classmethod
     def find_operator_index(cls, token_query):
+        """
+        Ищет наимение приоритетный оператор. 
+        Возвращает индекс оператора, либо None.
+        """
         counter = 0
         result_or = None
         result_and = None
@@ -59,6 +66,10 @@ class QueryParser:
         return None
 
     def parse_recurent(self, token_query):
+        """
+        Рекурентно парсит запрос. token_query - список токенов запроса. 
+        Возвращает верхнюю ноду запроса.
+        """
         QNode = None
         token_query = QueryParser.del_brackets(token_query) #удаляем обвязку из скобок если нужно
 
@@ -81,7 +92,3 @@ class QueryParser:
             QNode.fill_childs(left_node, right_node)
 
         return QNode
-
-
-if __name__ == '__main__':
-    test_str = "(!(docker & запуск) & (ubuntu | убунту) | привет)"

@@ -1,5 +1,10 @@
 import QueryParser
 
+"""
+В данном модуле реализованны классы для нод дерева запросов, 
+реализующих потоковый алгоритм.
+"""
+
 class QTreeNode:
 
     """
@@ -200,77 +205,5 @@ class QTree():
             self.current_value += 1
 
         return result
-
-
-
-def test_1():
-   # test_str_1 = "(!(docker | запуск) & (ubuntu | убунту))"
-    test_str_1 = "(docker & ubuntu)"
-    test_str_2 = "((docker & !запуск) | (ubuntu & убунту))"
-    test_str_3 = "(!docker & !ubuntu | убунту)"
-
-    #test_str = "(!запуск & ubuntu & убунту)"
-    dict_ = {'docker' : [0, 1, 2, 5, 7, 9, 15, 23],
-             'запуск' : [2, 4, 5, 6, 8, 11, 13, 15, 36],
-             'ubuntu' : [4, 5, 6, 7, 8, 10],
-             'убунту' : [2, 3, 5, 7, 34]
-             }
-
-    dict_shift = {'docker' : [0, 1, 1, 3, 2, 2, 6, 8],
-             'запуск' : [2, 2, 1, 1, 2, 3, 2, 2, 21],
-             'ubuntu' : [4, 1, 1, 1, 1, 2],
-             'убунту' : [2, 1, 2, 2, 27]
-             }
-
-
-
-    full = set(range(37))
-
-    test_1 = set(dict_['docker'])  & set(dict_['ubuntu'])
-
-    #test_1 = full.difference(set(dict_['docker']) | set(dict_['запуск'])) & (set(dict_['ubuntu']) | set(dict_['убунту']))
-
-    qtree = QTree(dict_shift, 36)
-
-    qtree.build_tree(test_str_1)
-
-
-    test_1_my = set(qtree.execute())
-
-    print(test_1_my, test_1)
-
-    assert(test_1 == test_1_my)
-
-    test_2 = (set(dict_['docker']) & full.difference(set(dict_['запуск']))) | (set(dict_['ubuntu']) & set(dict_['убунту']))
-
-    qtree = QTree(dict_shift, 36)
-
-    qtree.build_tree(test_str_2)
-
-    test_2_my = set(qtree.execute())
-
-    assert(test_2 == test_2_my)
-
-    test_3 = full.difference(set(dict_['docker'])) & full.difference(set(dict_['ubuntu'])) | set(dict_['убунту'])
-
-    qtree = QTree(dict_shift, 36)
-
-    qtree.build_tree(test_str_3)
-
-    test_3_my = set(qtree.execute())
-
-
-    assert(test_3 == test_3_my)
-
-    print("Tests 1 passed!")
-
-
-
-
-if __name__ == '__main__':
-    pass
-    #test_1()
-
-    #test_str_1 = "(docker & !linux)"
 
 

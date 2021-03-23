@@ -10,7 +10,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 
 def parse_file(path):
-    """ Обрабатывает *.gzip файл. Возвращает словарь url : text """
+    """ Обрабатывает *.gzip файл. Возвращает словарь {url : text} """
 
     with gzip.open(path, mode='rb') as f:
 
@@ -67,13 +67,13 @@ def diff(post_list):
     return arr
 
 def inverse_diff(post_list):
-    """ Переход от id документов к сдвигам"""
+    """ Переход от сдвигов к id документов"""
     arr = [next(post_list)]
     reduce(lambda x, y: arr.append(x + y) or x + y, post_list)
     return arr
 
 def make_encoded_pl(post_list, vb):
-    """Извлекает из индекса закодированный posting list для term"""
+    """Кодирует постинг лист алгоритмом VarByte"""
 
     return vb.encode(diff(post_list))
 

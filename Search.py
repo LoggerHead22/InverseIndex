@@ -1,10 +1,13 @@
 import QTree
 import VarByte
 import pickle
+import sys
 
 
 def process_query(query):
-
+    """
+    Обрабатывает запрос. Ведет поиск по индексу. 
+    """
     with open('index/id2url.pkl', 'rb') as fp:
         id2url = pickle.load(fp)
 
@@ -46,26 +49,7 @@ def process_query(query):
     return len(result)
 
 
-def search():
-    pass
-
 if __name__ == '__main__':
-
-    with open('index/id2url.pkl', 'rb') as fp:
-        id2url = pickle.load(fp)
-
-    with open('index/term2id.pkl', 'rb') as fp:
-        term2id = pickle.load(fp)
-
-    print(len(term2id))
-
-
-    querys = ['энергоносители', 'власти & США & конфликт',
-              'Представитель & милиции', 'Совет & Федерации & президент',
-              'США & конгресс & Сирия', 'Range & Rover',
-              'Россия & экономика & инфляция', 'Шенгенское & соглашение']
-    for query in querys:
-        process_query(query)
-
-    #print(process_query('путин'))
-    #print(process_query("навальный & враг & народа"))
+    query = " ".join(sys.argv[1:])
+    process_query(query.strip())
+    
